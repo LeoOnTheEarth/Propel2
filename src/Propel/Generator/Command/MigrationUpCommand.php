@@ -57,6 +57,8 @@ class MigrationUpCommand extends AbstractCommand
         }
         
         $generatorConfig = $this->getGeneratorConfig($configOptions, $input);
+        $tablePrefix = $generatorConfig->getSection('generator')['tablePrefix'];
+        $tablePrefixReplacement = $generatorConfig->getSection('generator')['tablePrefixReplacement'];
 
         $this->createDirectory($generatorConfig->getSection('paths')['migrationDir']);
 
@@ -131,6 +133,8 @@ class MigrationUpCommand extends AbstractCommand
 
             if (!$input->getOption('fake')) {
                 foreach ($statements as $statement) {
+                    $statement = str_replace($tablePrefixReplacement, $tablePrefix, $statement);
+
                     try {
                         if ($input->getOption('verbose')) {
                             $output->writeln(sprintf('Executing statement "%s"', $statement));

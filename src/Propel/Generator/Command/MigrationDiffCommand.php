@@ -77,6 +77,9 @@ class MigrationDiffCommand extends AbstractCommand
         }
 
         $generatorConfig = $this->getGeneratorConfig($configOptions, $input);
+        $tablePrefix = $generatorConfig->getSection('generator')['tablePrefix'];
+        $tablePrefixLength = strlen($tablePrefix);
+        $tablePrefixReplacement = $generatorConfig->getSection('generator')['tablePrefixReplacement'];
 
         $this->createDirectory($generatorConfig->getSection('paths')['migrationDir']);
 
@@ -127,6 +130,10 @@ class MigrationDiffCommand extends AbstractCommand
 
             $additionalTables = [];
             foreach ($appDatabase->getTables() as $table) {
+                $appDatabase->removeTable($table);
+                $table->setCommonName($tablePrefixReplacement . $table->getOriginCommonName());
+                $appDatabase->addTable($table);
+
                 if ($table->getSchema() && $table->getSchema() != $appDatabase->getSchema()) {
                     $additionalTables[] = $table;
                 }
@@ -171,6 +178,14 @@ class MigrationDiffCommand extends AbstractCommand
         
         foreach ($reversedSchema->getDatabases() as $database) {
             $name = $database->getName();
+
+            foreach ($database->getTables() as $table) {
+                if (0 === strpos($table->getCommonName(), $tablePrefix)) {
+                    $database->removeTable($table);
+                    $table->setCommonName($tablePrefixReplacement . substr($table->getCommonName(), $tablePrefixLength));
+                    $database->addTable($table);
+                }
+            }
 
             if ($input->getOption('verbose')) {
                 $output->writeln(sprintf('Comparing database "%s"', $name));

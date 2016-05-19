@@ -313,6 +313,7 @@ class PropelConfiguration implements ConfigurationInterface
                     ->children()
                         ->scalarNode('defaultConnection')->end()
                         ->scalarNode('tablePrefix')->end()
+                        ->scalarNode('tablePrefixReplacement')->defaultValue('@@@___')->end()
                         ->scalarNode('platformClass')->defaultNull()->end()
                         ->scalarNode('targetPackage')->end()
                         ->booleanNode('packageObjectModel')->defaultTrue()->end()
